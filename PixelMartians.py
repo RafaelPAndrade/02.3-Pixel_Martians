@@ -1,4 +1,25 @@
 #coding: utf-8
+""" TODO:
+    -Use function to fire the shots (Ship and Alien)-Done
+    -Backup the pontuation/store not in Ship class internal status
+    -Divide better the Intro from the core game mechanics
+    -Breakup vertically protections
+    -Using visual blocks for life status
+    -Random shooting for Aliens
+    -Add proper game over+keep high scores between repetitions
+    -Better leveling up
+    -Types of ammo
+    -Ammo counting
+    -Scoreboard
+    -Bonuses/Random targets
+    -Boosts
+    -Cooldown
+    -Shooting with effects
+    -accelaration mechanics [Optional in-game?]+Drag
+    -Backing up status to file+Load game from file/last game"""
+
+
+
 
 import pygame
 import random
@@ -98,8 +119,8 @@ def gen_aliens(list_aliens):
 		list_aliens.append(greyalien)
 	return True
 
-def gen_player():
-	name = Ship(constants.SCREEN_WIDTH/2-10,constants.BLACK, 3)
+def gen_player(life):
+	name = Ship(constants.SCREEN_WIDTH/2-10,constants.BLACK, life, npoint_list, point_list)
 	animated_list.add(name)
 	drawables_list.add(name)
 	
@@ -113,7 +134,8 @@ Intro = False
 Ready = False
 player = False
 increase_level = True
-points=0 #keeps pontuation when killing Player1
+points=0	#keeps pontuation when killing Player1
+life=3		#keeps lifes number when killing Player1
 #------------------------Game Logic-----------------------------------
 print('Starting cicle...')
 while not done:
@@ -127,10 +149,12 @@ while not done:
 
 	#--------------Create player-----------------------------------
 	if player == False or Player1 not in drawables_list:
-		Player1=gen_player()
+		Player1=gen_player(life)
 		Player1.lifes -= 1
 		Player1.pontuation=points
 		del points
+		del life
+		print(Player1.t_w_points)
 		player = True
 
 
@@ -153,6 +177,7 @@ while not done:
 	killing_list = pygame.sprite.spritecollide(Player1, point_list,False)
 	if len(killing_list) > 0:
 		points=Player1.pontuation
+		life= Player1.lifes
 		Player1.kill()
 		player= False
 		for i in range (0,40):
@@ -179,7 +204,7 @@ while not done:
 				elif event.key == pygame.K_RIGHT:
 					Player1.move_right()
 				elif event.key == pygame.K_d:
-					Proj = Bullet(Player1.rect.x+10,Player1.rect.y, 1,5, npoint_list, point_list, Player1)
+					Proj =Player1.shooting()
 					drawables_list.add(Proj)
 					animated_list.add(Proj)
 			elif event.type == pygame.KEYUP:

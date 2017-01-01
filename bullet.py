@@ -17,8 +17,8 @@ class Bullet(Block):
 		
 			self.t_n_points= None
 		if isinstance(targets_points, pygame.sprite.Group):
-			self.t_w_points= targets_points #must have self.value...
-			self.point_receptor=point_receptor	
+			self.t_w_points= targets_points		#must have self.value...
+			self.point_receptor=point_receptor	#must have change_points_by(x) method
 		else:	
 			self.t_w_points= None
 		
