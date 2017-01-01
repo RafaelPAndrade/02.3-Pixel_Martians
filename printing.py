@@ -12,7 +12,7 @@ import pygame
 #place - name of your screen in pygame, default "screen"
 
 
-def words(x, y, color, size, string,place):
+def words(x, y, color, size, string, place):
     font = pygame.font.Font(None, size)
     text = font.render(string, 1, color) #color may refer to the constants.py file
     textpos = text.get_rect()
