@@ -47,7 +47,8 @@ class Ship(Block):
 		self.pontuation+= value
 
 	def shooting(self):
-		name = Bullet(self.rect.x+ 10, self.rect.y, 1, 5, self.t_n_points, self.t_w_points, self)
+		name = Bullet(self.rect.x + 10, self.rect.y - 10, 1, 5, self.t_n_points, self.t_w_points, self)
+		#name = Bullet(constants.SCREEN_WIDTH//2, constants.SCREEN_HEIGHT//2, 1, 5)
 		return name
 
 
