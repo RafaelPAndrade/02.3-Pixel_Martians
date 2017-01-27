@@ -7,7 +7,7 @@ import constants
 #insert this class in ship method gen_shoot()
 class Bullet(Block):
 	def __init__(self,x,y, sign, speed, targets_nopoints= None, targets_points=None, point_receptor=None):
-		super(Bullet, self).__init__(x,y,10,10,constants.BLUE)
+		super(Bullet, self).__init__(x,y,10,10,constants.YELLOW)
 		self.dir_x = 0
 		self.dir_y = -1*sign*speed
 		#Next 2 shall be pygame.sprite.Group()...

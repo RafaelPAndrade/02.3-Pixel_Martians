@@ -62,7 +62,7 @@ npoint_list = pygame.sprite.Group()
 limit_list = pygame.sprite.Group() 
 
 #Group of player+player shots
-player_list = pygame.sprite.Group()
+#player_list = pygame.sprite.Group()
 
 
 
@@ -230,7 +230,6 @@ while not done:
 					animated_list.add(Proj)
 					print('Shots fired!!')
 					print("After,", len(animated_list))
-					#npoint_list.add(Proj) <--THIS IS A BASTARD!!!!!!!
 			elif event.type == pygame.KEYUP:
 				if event.key == pygame.K_p:
 					if Ready == True:
