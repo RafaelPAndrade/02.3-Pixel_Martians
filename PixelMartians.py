@@ -1,5 +1,25 @@
 #coding: utf-8
 
+""" TODO:
+    -Use function to fire the shots (Alien)-Alien not done
+    -Divide better the Intro from the core game mechanics
+    -Backup the pontuation/store points not in Ship class internal status
+    -Breakup vertically protections
+    -Using visual blocks for life status
+    -Random shooting for Aliens
+    -Add proper game over+keep high scores between repetitions
+    -Better leveling up
+    -Types of ammo
+    -Ammo counting
+    -Scoreboard
+    -Bonuses/Random targets
+    -Boosts
+    -Cooldown
+    -Shooting with effects
+    -accelaration mechanics [Optional in-game?]+Drag
+    -Backing up status to file+Load game from file/last game"""
+
+#imports & inits
 import pygame
 import random
 import constants
@@ -8,166 +28,206 @@ from ship import Ship
 from alien import Alien
 from bullet import Bullet
 from printing import words
-import pointing
 
-
-
+print('Import done!')
 
 pygame.init()
 
 clock = pygame.time.Clock()
+screen = pygame.display.set_mode([constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT])
 
 done = False
 
-drawables_list = pygame.sprite.Group() #--->drawables, namely player aliens shots and protections, all except text (screen blit function, I guess...)
-animated_list = pygame.sprite.Group() #--->animated stuff, namely player aliens and shots
-shot_list = pygame.sprite.Group() #---> aliens
-limit_list = pygame.sprite.Group() #--->(invisible) walls in left and right of the screen , defined below
-shield_list = pygame.sprite.Group() #--->protections near the player
-player_list = pygame.sprite.Group() #--->literaly, just defined to contain the player, for pygame.colisions. Must have a better way, though...
-bomb_list = pygame.sprite.Group() #--->number of shots fired by both the alien and the player, not sure why I did it yet
 
-screen = pygame.display.set_mode([constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT])
-#invisible limits
+#########################################
+#Sprite groups
+#########################################
+
+#Universal groups:
+
+##drawables, namely player aliens shots and protections
+drawables_list = pygame.sprite.Group() 
+
+##animated stuff, namely player aliens and shots
+animated_list = pygame.sprite.Group() 
+
+
+
+#Ships POV (behavior of ship's shots regarding certain elements):
+
+##Group of pontuated objects (aliens)
+s_point_list = pygame.sprite.Group() 
+
+##Group of not pontuated objects (shields, ?alien_shots?)
+s_npoint_list = pygame.sprite.Group() 
+
+
+#Alien POV
+
+##Group of (not pontuated) objects, player (shields, ?ship shots?)
+a_npoint_list = pygame.sprite.Group() 
+
+##walls in left and right of the screen, defined below (aliens only)
+limit_list = pygame.sprite.Group() 
+
+
+
+
+###################END PYGAME GROUPS##############################
+
+
+###########################################
+#Game Environment construction
+###########################################
+
+
+#invisible limits, avoiding aliens from exiting the screen (in swarm)
 left_wall = Block(0,0,1,constants.SCREEN_HEIGHT,constants.BLACK)
 right_wall = Block(constants.SCREEN_WIDTH-1,0,1,constants.SCREEN_HEIGHT,constants.BLACK)
-drawables_list.add(left_wall)
-drawables_list.add(right_wall)
 limit_list.add(left_wall)
 limit_list.add(right_wall)
 
 
-#protections
-#TODO: break up, independent sections in each protection
-#left first
-for f in range(0,10):
-	left_shield = Block(110,constants.SCREEN_HEIGHT-80-2*f,100,2,constants.LBLUE)
-	drawables_list.add(left_shield)
-	shield_list.add(left_shield)
-#right
-for f in range(0,10):
-	right_shield = Block(constants.SCREEN_WIDTH-110-100,constants.SCREEN_HEIGHT-80-2*f,100,2,constants.LBLUE)
-	drawables_list.add(right_shield)
-	shield_list.add(right_shield)
-#center
-for f in range(0,10):
-	center_shield = Block(constants.SCREEN_WIDTH/2-50,constants.SCREEN_HEIGHT-80-2*f,100,2,constants.LBLUE)
-	drawables_list.add(center_shield)
-	shield_list.add(center_shield)
+#player protections
+def gen_protections():
+	#protections
+	#TODO: break up, independent sections in each protection
+	#left first
+	for f in range(0,10):
+		left_shield = Block(110,constants.SCREEN_HEIGHT-80-2*f,100,2,constants.LBLUE)
+		drawables_list.add(left_shield)
+		s_npoint_list.add(left_shield)
+		a_npoint_list.add(left_shield)
+	#right
+	for f in range(0,10):
+		right_shield = Block(constants.SCREEN_WIDTH-110-100,constants.SCREEN_HEIGHT-80-2*f,100,2,constants.LBLUE)
+		drawables_list.add(right_shield)
+		s_npoint_list.add(right_shield)
+		a_npoint_list.add(right_shield)
+	#center
+	for f in range(0,10):
+		center_shield = Block(constants.SCREEN_WIDTH/2-50,constants.SCREEN_HEIGHT-80-2*f,100,2,constants.LBLUE)
+		drawables_list.add(center_shield)
+		s_npoint_list.add(center_shield)
+		a_npoint_list.add(center_shield)
+
+gen_protections()
+
+
+#aliens
+def gen_aliens(list_aliens):
+	for b in range(1,11):
+		greenalien = Alien(35+40*b,20, constants.GREEN, a_npoint_list)
+		drawables_list.add(greenalien)
+		animated_list.add(greenalien)
+		s_point_list.add(greenalien)
+		list_aliens.append(greenalien)
+
+
+	for c in range (1,11):
+		bluealien = Alien(35+40*c,60, constants.BLUE, a_npoint_list)
+		drawables_list.add(bluealien)
+		animated_list.add(bluealien)
+		s_point_list.add(bluealien)
+		list_aliens.append(bluealien)
 
 
 
+	for d in range (1,11):
+		redalien = Alien(35+40*d,100, constants.RED, a_npoint_list)
+		drawables_list.add(redalien)
+		animated_list.add(redalien)
+		s_point_list.add(redalien)
+		list_aliens.append(redalien)
+
+
+	for e in range (1,11):
+		greyalien = Alien(35+40*e,140, constants.GREY, a_npoint_list)
+		drawables_list.add(greyalien)
+		animated_list.add(greyalien)
+		s_point_list.add(greyalien)
+		list_aliens.append(greyalien)
+	return True
+
+def gen_player(life):
+	name1 = Ship(constants.SCREEN_WIDTH/2-10,constants.BLACK, life, s_npoint_list, s_point_list)
+	animated_list.add(name1)
+	drawables_list.add(name1)
+	a_npoint_list.add(name1)
+	return name1
+
+	
 #------------------------Constants/Variables----------------------------
 Intro = False
 Ready = False
-
-
 player = False
 increase_level = True
-invert = False
-points = 0
-throw = 0
-lifes = 3
-fired_rounds = 0
+points=0	#keeps pontuation when killing Player1
+life=3		#keeps lifes number when killing Player1
+Proj=None
 #------------------------Game Logic-----------------------------------
+print('Starting cicle...')
 while not done:
 
 
-	points = pointing.points
+
+
+	#--------------Create player-----------------------------------
+	if player == False or Player1 not in drawables_list:
+		print("Generating player... because:", player == False)
+		Player1=gen_player(life)
+		Player1.lifes -= 1
+		Player1.pontuation=points
+		#del points
+		#del life
+		#print(Player1.t_w_points)
+		print("Player Generated!")
+		player = True	
+
 
 	#---------------------------Create aliens------------------------------
 	if increase_level==True:
-		aliens=[] #this is a list/group/ i-dont-know-the-name, allows for 1-by-1 changes in their coordinates and status,  check it out bellow 
-
-		for b in range(1,11):
-			greenalien = Alien(35+40*b,20, constants.GREEN)
-			drawables_list.add(greenalien)
-			animated_list.add(greenalien)
-			shot_list.add(greenalien)
-			greenalien.set_value(constants.GREEN)
-			aliens.append(greenalien)
-
-
-		for c in range (1,11):
-			bluealien = Alien(35+40*c,60, constants.BLUE)
-			drawables_list.add(bluealien)
-			animated_list.add(bluealien)
-			shot_list.add(bluealien)
-			bluealien.set_value(constants.BLUE)
-			aliens.append(bluealien)
-
-
-
-		for d in range (1,11):
-			redalien = Alien(35+40*d,100, constants.RED)
-			drawables_list.add(redalien)
-			animated_list.add(redalien)
-			shot_list.add(redalien)
-			aliens.append(redalien)
-			redalien.set_value(constants.RED)
-
-
-		for e in range (1,11):
-			greyalien = Alien(35+40*e,140, constants.GREY)
-			drawables_list.add(greyalien)
-			animated_list.add(greyalien)
-			shot_list.add(greyalien)
-			greyalien.set_value(constants.GREY)
-			aliens.append(greyalien)
+		aliens=[] #list of aliens 
+		gen_aliens(aliens)
+		print(aliens[39].to_destroy)
 		increase_level = False
-	#--------------Create player-----------------------------------
-	if player == False: #and lifes > 0
-		Player1 = Ship(constants.SCREEN_WIDTH/2-10,constants.BLACK)
-		animated_list.add(Player1)
-		drawables_list.add(Player1)
-		player_list.add(Player1)
-		player = True
-		lifes -= 1
-
-		#----------attempt at blocks for life indication---------------------
-		#TODO : it does not reduce the lifes when player killed
-		for l in range(0,lifes):
-			life_empty = Block(constants.SCREEN_WIDTH-50*(l+1),2, 30,30,constants.BLACK)
-			drawables_list.add(life_empty)
-
 
 
 	#-----------------if there is no more targets/aliens, create more, add a life----------------
-	if len(shot_list)== 0:
-		lifes += 1
+	if len(s_point_list)== 0:
+		Player1.lifes += 1
 		Ready = False
 		increase_level = True
 
-	#----------------if there is no player, add player--------------------------
-	if len(player_list) == 0:
-		player = False
-
 
 	#------if aliens collide with borders, invert horizontal movement and go down------------
-	limited_list=pygame.sprite.groupcollide(shot_list, limit_list, False, False)
+	limited_list=pygame.sprite.groupcollide(s_point_list, limit_list, False, False)
 	if len(limited_list) > 0:
 		for i in range(0,40):
 			aliens[i].dir_x = aliens[i].dir_x*-1
 			aliens[i].rect.y += 40
 
+
 	#----------------Aliens retreat when they hit the player, killing him-----
-	killing_list = pygame.sprite.spritecollide(Player1,shot_list,False)
-	if len(killing_list) > 0:
+	collision_sprite = pygame.sprite.spritecollideany(Player1, s_point_list)
+	if collision_sprite is not None:
+		print("Got collision!")
+		points=Player1.pontuation
+		life= Player1.lifes
 		Player1.kill()
+		player= False
 		for i in range (0,40):
 			aliens[i].rect.y -= 240
+		del collision_list
+	
 	#----------Shooting algorithm-----------------
-	for t in range(0,40):
-		throw = random.randrange(0,4500)
-		if throw == 6 and aliens[t] in shot_list:
-			#---------------if aliens[t] pertence a drawables_list
-			Bomb = Bullet(aliens[t].rect.x+5,aliens[t].rect.y+20,-1,1)
-			Bomb.set_shot(player_list)
-			Bomb.set_shield(shield_list)
-			drawables_list.add(Bomb)
-			animated_list.add(Bomb)
-			bomb_list.add(Bomb)
-			fired_rounds += 1
+	#for t in range(0,40):
+	#	throw = random.randrange(0,4500)
+	#	if throw == 6 and aliens[t] in drawables_list:
+	#		Bomb = aliens[t].shooting()
+	#		drawables_list.add(Bomb)
+	#		animated_list.add(Bomb)
+	#		s_npoint_list.add(Bomb)
 
 
 	#------------------------------get events(key presses)---------------
@@ -179,20 +239,23 @@ while not done:
 					Player1.move_left()
 				elif event.key == pygame.K_RIGHT:
 					Player1.move_right()
-				elif event.key == pygame.K_d and pointing.gunfired ==False and player == True and Ready == True:
-					Proj = Bullet(Player1.rect.x+10,Player1.rect.y,1,5)
+				elif event.key == pygame.K_d and Ready == True:
+					print("Before,", len(animated_list))
+					Proj = Player1.shooting()
+					print(id(Proj))
 					drawables_list.add(Proj)
 					animated_list.add(Proj)
-					Proj.set_shot(shot_list)
-					Proj.set_shield(shield_list)
-					Proj.set_bomb(bomb_list)
-					pointing.gunfired = True
+					a_npoint_list.add(Proj)
+					print('Shots fired!!')
+					print("After,", len(animated_list))
 			elif event.type == pygame.KEYUP:
 				if event.key == pygame.K_p:
 					if Ready == True:
+						print("Paused...")
 						Ready = False
 					elif Ready == False:
 						Ready = True
+						print("Resumed!")
 
 				if event.key == pygame.K_LEFT:
 					Player1.dont_move()
@@ -200,31 +263,19 @@ while not done:
 				elif event.key == pygame.K_RIGHT:
 					Player1.dont_move()
 
-
 	#------------only move if ready------------------
 	if Ready == True:
 		animated_list.update()
-
-
-
 
 	screen.fill(constants.CFUNDO)
 
 	drawables_list.draw(screen)
 
-	font = pygame.font.Font(None, 40)
-	text = font.render(str(points), 5, constants.BLACK)
-	textpos = text.get_rect()
-	textpos.centerx = 35
-	textpos.centery = 15
-	screen.blit(text, textpos)
 
-	font = pygame.font.Font(None, 40)
-	text = font.render(str(lifes), 5, constants.BLACK)
-	textpos = text.get_rect()
-	textpos.centerx = constants.SCREEN_WIDTH-35
-	textpos.centery = 15
-	screen.blit(text, textpos)
+	words(35,15,constants.BLACK, 40, str(Player1.pontuation), screen)
+
+	words(constants.SCREEN_WIDTH-35, 15, constants.BLACK, 40, str(Player1.lifes), screen)
+
 
 #---------------------------Intro------------------------------
 	if Intro == False:
@@ -237,8 +288,10 @@ while not done:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				done = True
+				print("Exiting...")
 			elif event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_b:
+					print("Exiting...")
 					done = True
 				elif event.key == pygame.K_d:
 					Intro = True
